@@ -6,7 +6,10 @@ from fitparse import FitFile
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import numpy as np
-# La commande a lancer : python src/utils/extract_fit_file.py "./src/utils/20355680594_ACTIVITY.fit"
+import os # Importation nécessaire
+
+# La commande a lancer : python extract_fit_file.py "./uploads/fichier.fit" ./results/
+
 # Facteur de conversion de la vitesse: 1 m/s = 3.6 km/h
 MS_TO_KMH = 3.6
 
@@ -30,9 +33,6 @@ def classify_lap_nature_by_speed(df_laps):
     """
     Classifie la nature des laps (Warm-up, Intensity, Recovery, Cool-down)
     en se basant sur avg_speed_kmh, avec une logique séquentielle.
-    
-    ATTENTION: Cette fonction nécessite que la colonne 'avg_speed_kmh' soit déjà calculée 
-    et que les laps soient triés par lap_number.
     """
     
     if df_laps.empty or 'avg_speed_kmh' not in df_laps.columns:
@@ -91,7 +91,6 @@ def classify_lap_nature_by_speed(df_laps):
     return df_laps
 
 def parse_fit(ff):
-    # ... (le corps de la fonction parse_fit reste inchangé, sauf pour l'appel à add_lap_info)
     # 1. Extraction des enregistrements de la session (Record Messages)
     rows = []
     columns_to_drop = [
@@ -181,9 +180,6 @@ def add_lap_info(fitfile, df):
     """
     Ajoute le numéro de lap et la nature du lap (classée par vitesse) 
     à chaque timestamp du dataframe de records.
-    
-    MODIFICATION: La classification de 'lap_nature' utilise la vitesse moyenne
-    directement issue du message 'lap' pour éviter le recalcul par agrégation.
     """
     
     if df.empty or 'timestamp' not in df.columns:
@@ -231,8 +227,8 @@ def add_lap_info(fitfile, df):
         df.loc[mask, 'lap_number'] = lap_num
         
     df.loc[df['lap_number'] == 0, 'lap_number'] = len(laps_sorted)
-    print(f"{len(laps_sorted)} laps détectés et assignés aux enregistrements")
-
+    # print(f"{len(laps_sorted)} laps détectés et assignés aux enregistrements") # Commenté pour éviter la sortie console
+    
     # 2. Classification de la nature du lap basée sur la vitesse (avg_speed_kmh)
     
     # Création du DataFrame de résumé des laps à partir des messages 'lap'
@@ -255,14 +251,10 @@ def add_lap_info(fitfile, df):
         
         df['lap_nature'] = df['lap_nature'].fillna('Unknown')
     else:
-        print("Avertissement: 'avg_speed' non trouvé dans les messages 'lap'. Classification de 'lap_nature' impossible.")
+        # print("Avertissement: 'avg_speed' non trouvé dans les messages 'lap'. Classification de 'lap_nature' impossible.") # Commenté
         df['lap_nature'] = 'Unknown'
         
     return df
-
-# ... (Le reste des fonctions parse_fit, export_lap_csv et main doit être inclus dans votre fichier)
-# Note: export_lap_csv doit également être mis à jour pour utiliser classify_lap_nature_by_speed
-# comme dans la réponse précédente pour une cohérence complète entre les exports records et laps.
 
 def export_lap_csv(fitfile, output_path):
     """
@@ -283,7 +275,7 @@ def export_lap_csv(fitfile, output_path):
         laps.append(lap_data)
 
     if not laps:
-        print("Avertissement: Aucun lap trouvé pour l'exportation par lap.")
+        # print("Avertissement: Aucun lap trouvé pour l'exportation par lap.") # Commenté
         return None
 
     df_laps = pd.DataFrame(laps)
@@ -349,38 +341,55 @@ def export_lap_csv(fitfile, output_path):
     return df_laps
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python extract_fit.py path/to/file.fit")
+    # Deux arguments sont maintenant attendus : le chemin du fichier FIT et le chemin du dossier de sortie
+    if len(sys.argv) < 3:
+        # Renvoie un message JSON pour que Node.js puisse le lire
+        error_msg = {"status": "error", "message": "Usage: python extract_fit.py path/to/file.fit path/to/output_dir/"}
+        print(json.dumps(error_msg))
         sys.exit(1)
     
-    fn = Path(sys.argv[1])
-    public_dir = Path(__file__).parent.parent.parent / "public"
-    output_path_records_csv = public_dir / "activity_data.csv"
-    output_path_laps_csv = public_dir / "activity_data_by_lap.csv"
+    fit_file_path = Path(sys.argv[1])
+    output_dir = Path(sys.argv[2])
+    
+    # Création de noms de fichiers uniques (basés sur le nom du fichier FIT, sans l'extension)
+    file_stem = fit_file_path.stem 
+    output_path_records_csv = output_dir / f"{file_stem}_records.csv"
+    output_path_laps_csv = output_dir / f"{file_stem}_laps.csv"
 
     try:
-        ff = FitFile(str(fn))
+        ff = FitFile(str(fit_file_path))
+        
         # 1. Traitement et export du fichier de RECORDS 
         df = parse_fit(ff)
 
-        public_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
         
         # Export CSV des records
         df.to_csv(output_path_records_csv, index=False)
-        print("Export terminé : activity_data.csv")
         
         # 2. Traitement et export du fichier de LAPS
         export_lap_csv(ff, output_path_laps_csv)
-        print("Export terminé : activity_data_by_lap.csv")
+
+        # 3. Renvoyer les chemins des fichiers en JSON pour Node.js
+        result = {
+            "status": "success",
+            "message": "Fichiers CSV générés avec succès.",
+            "records_csv_path": str(output_path_records_csv),
+            "laps_csv_path": str(output_path_laps_csv)
+        }
+        print(json.dumps(result))
 
     except FileNotFoundError:
-        print(f"Erreur: Fichier non trouvé à l'emplacement '{fn}'")
+        error_msg = {"status": "error", "message": f"Erreur: Fichier FIT non trouvé à l'emplacement '{fit_file_path}'"}
+        print(json.dumps(error_msg))
         sys.exit(1)
     except RuntimeError as e:
-        print(f"Erreur de traitement du fichier .fit: {e}")
+        error_msg = {"status": "error", "message": f"Erreur de traitement du fichier .fit: {e}"}
+        print(json.dumps(error_msg))
         sys.exit(1)
     except Exception as e:
-        print(f"Une erreur inattendue s'est produite: {e}")
+        error_msg = {"status": "error", "message": f"Une erreur inattendue s'est produite: {e}"}
+        print(json.dumps(error_msg))
         sys.exit(1)
 
 if __name__ == "__main__":
