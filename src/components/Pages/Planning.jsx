@@ -134,7 +134,7 @@ const Planning = () => {
     <div className="page-container">
       <h1>Training Plan</h1>
       <h4>Here is a suggested training program that will help you achieve your goals.</h4>
-      <h4>The first fortnight is available and free of charge. To access the rest of the plan, subscribe to Enduraw® personalized support.</h4>
+      <h4>The first fortnight is available and free of charge. To access the rest of the plan, subscribe to our personalized support.</h4>
 
       <div className="calendar-container">
         <Calendar
@@ -164,11 +164,11 @@ const Planning = () => {
 
       <h4>The proposed plan is for guidance only. It aims to improve your performance in short trail runs but does not take into account your specific physical characteristics, training load, lifestyle, or daily constraints.</h4>
 
-      <h4>For a tailor-made plan and to discuss your goals with a coach, subscribe to Enduraw® personalized support.</h4>
+      <h4>For a tailor-made plan and to discuss your goals with a coach, subscribe to our personalized support.</h4>
 
       <div className="button-container">
         <button className="training-plan-button">
-          Become an Enduraw® customer
+          Become a premium customer
         </button>
       </div>
     </div>

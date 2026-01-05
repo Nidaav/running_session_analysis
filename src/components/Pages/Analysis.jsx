@@ -92,7 +92,7 @@ const Analysis = ({ csvText, csvByLapText }) => {
 
       <div className="button-container">
         <button onClick={handleViewPlan} className="training-plan-button">
-          Check out the tips from Enduraw coach
+          Check out the tips to improve
         </button>
       </div>
     </div>
