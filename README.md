@@ -1,10 +1,10 @@
-# Enduraw® Training Dashboard
+# Running Session Analysis
 
-Welcome !
+# Welcome !
 
 This project is a data visualization dashboard designed to analyze your training activities from CSV files.
 
-It also contains feedback on your last session, areas for improvement to help you achieve your goals as a trail runner, and a draft training plan that you could have as an Enduraw customer.
+It also contains feedback on your last session, areas for improvement to help you achieve your goals as a trail runner, and a draft training plan that you could have as an premium customer.
 
 This guide will walk you through cloning the repository, installing dependencies, and launching the application locally.
 
@@ -32,7 +32,7 @@ npm -v
 
 ### Step 1: Clone the Repository
 
-Create a new folder called “**Technical test for Enduraw (LT)**”, then right-click and select “**Open in Terminal**.”
+Create a new folder called “**Running Session Analysis**”, then right-click and select “**Open in Terminal**.”
 If you have **Visual Studio Code** installed, you can right-click and select “**Open with Code**” (this option is usually hidden in “Show more options” if you are using Windows 11).
 This will allow you to view the code used to create this React application.
 
@@ -42,15 +42,15 @@ Once the terminal is open (or Command Prompt/PowerShell), run the following comm
 
 ```
 # Clone the repository from GitHub
-git clone https://github.com/Nidaav/Enduraw_dashboard.git
+git clone https://github.com/Nidaav/runnin_session_analysis.git
 
 # Navigate into the project directory
-cd Enduraw_dashboard
+cd running_session_analysis
 ```
 
 ### Step 2: Install Dependencies
 
-Once you are inside the `Enduraw_dashboard` folder, use npm to install all necessary project dependencies (as listed in `package.json`):
+Once you are inside the running_session_analysis folder, use npm to install all necessary project dependencies (as listed in `package.json`):
 
 **Bash**
 
